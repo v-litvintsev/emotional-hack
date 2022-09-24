@@ -6,7 +6,7 @@ from typing import List
 
 
 
-MONGO_DETAILS = "mongodb://localhost:27017"
+MONGO_DETAILS = "mongodb://mongodb:27017/"
 
 client = motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
 

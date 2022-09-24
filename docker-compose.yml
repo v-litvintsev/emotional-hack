@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  web:
+    build: ./server
+    ports:
+      - "80:80"
+
+  mongodb:
+    image: mongo
+    ports:
+      - "27017"
+    volumes:
+      - data:/bitnami/mongodb
+
+
+volumes:
+  data:
