@@ -1,6 +1,10 @@
-from fastapi import APIRouter,WebSocket,WebSocketDisconnect
+from fastapi import APIRouter,WebSocket,WebSocketDisconnect,Body
 from .ws import ConnectionManager
 from fastapi.responses import HTMLResponse
+from .database import *
+from .models import *
+from fastapi.encoders import jsonable_encoder
+
 
 
 manager = ConnectionManager()
@@ -54,7 +58,7 @@ html = """
 
 
 
-@router.get('/')
+@router.get('/chat')
 async def get():
     return HTMLResponse(html)
 
@@ -69,3 +73,24 @@ async def websocket_endpoint(websocket:WebSocket,client_id:int):
     except WebSocketDisconnect:
         manager.disconnect(websocket)
         await manager.broadcast(f"Client #{client_id} left the chat")
+
+
+
+@router.post('/', response_description='User data added into the database')
+async def add_user_data(user:UserSchema = Body(...)):
+    user = jsonable_encoder(user)
+    new_user = await add_user(user)
+    return new_user
+
+
+
+@router.get("/", response_description="Students retrieved")
+async def get_students():
+    users = await retrieve_users()
+    return users
+
+
+@router.get("/{id}", response_description="Student data retrieved")
+async def get_student_data(id):
+    user = await retrieve_user(id)
+    return user
