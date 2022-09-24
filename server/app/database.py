@@ -1,13 +1,12 @@
 from motor import motor_asyncio
 from bson.objectid import ObjectId
-from typing import List
 
 
 
 
 
-MONGO_DETAILS = "mongodb://mongodb:27017/"
-
+#MONGO_DETAILS = "mongodb://mongodb:27017/"  # for docker-compose
+MONGO_DETAILS = 'mongodb://localhost:27017'
 client = motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
 
 database = client.users
@@ -22,6 +21,7 @@ def user_helper(user) -> dict:
     return {
         'id': str(user['_id']),
         'username': user['username'],
+        "email": user["email"],
         'messages': user['messages'],
     }
 

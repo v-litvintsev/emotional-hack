@@ -80,17 +80,34 @@ async def websocket_endpoint(websocket:WebSocket,client_id:int):
 async def add_user_data(user:UserSchema = Body(...)):
     user = jsonable_encoder(user)
     new_user = await add_user(user)
-    return new_user
+    return ResponseModel(new_user,'User added successfully.')
 
 
 
 @router.get("/", response_description="Students retrieved")
 async def get_students():
     users = await retrieve_users()
-    return users
+    if users:
+        return ResponseModel(users,'Users data retrieved successfully')
+    return ResponseModel(users,'Empty list returned')
 
 
 @router.get("/{id}", response_description="Student data retrieved")
 async def get_student_data(id):
     user = await retrieve_user(id)
-    return user
+    if user:
+        return ResponseModel(user, 'User data retrieved successfully')
+    return ErrorResponseModel("An error occurred.", 404, "Student doesn't exist.")
+
+
+
+@router.delete('/{id}', response_description="User data deleted from the database")
+async def delete_user_data(id:str):
+    deleted_user = await delete_user(id)
+    if deleted_user:
+        return ResponseModel(
+            "User with ID: {} removed".format(id), "User deleted successfully"
+        )
+    return ResponseModel(
+        "An error occurred", 404, "User with id {0} doesn't exist".format(id)
+    )
