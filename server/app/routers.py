@@ -13,7 +13,7 @@ html = """
     </head>
     <body>
         <h1>WebSocket Chat</h1>
-        <h2>Your ID: <span id="ws-id"></span></h2>
+        <h2>Your nickname: <span id="ws-id"></span></h2>
         <form action="" onsubmit="sendMessage(event)">
             <input type="text" id="messageText" autocomplete="off"/>
             <button>Send</button>
@@ -21,7 +21,7 @@ html = """
         <ul id='messages'>
         </ul>
         <script>
-            var username = "biggvladik"
+            var username = "Vlad Zuev"
             document.querySelector("#ws-id").textContent = username;
             var ws = new WebSocket(`ws://localhost:8000/ws/${username}`);
             ws.onmessage = function(event) {

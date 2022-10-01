@@ -8,7 +8,7 @@ from .models  import MessageSchema
 # MONGO_DETAILS = 'mongodb://localhost:27017'
 class Database():
     def __init__(self):
-        self.client = motor_asyncio.AsyncIOMotorClient("mongodb://mongodb:27017/")
+        self.client = motor_asyncio.AsyncIOMotorClient("mongodb://localhost:27017")
         self.database = self.client.users
         self.user_collection = self.database.get_collection('users_collection')
     @staticmethod
@@ -16,8 +16,7 @@ class Database():
         return {
             'id': str(user['_id']),
             'username': user['username'],
-            "email": user["email"],
-            'messages': user['messages'],
+           # 'messages': user['messages'],
         }
 
 
@@ -27,7 +26,11 @@ class Database():
             'messages': user['messages'],
         }
 
-    async def add_user(self, user_data: dict) -> dict:
+    async def add_user(self, user_dict: dict) -> dict:
+        user_data = {
+            'username':user_dict['username'],
+            'messages' : []
+        }
         user = await self.user_collection.insert_one(user_data)
         new_user = await self.user_collection.find_one({'_id': user.inserted_id})
 
@@ -64,6 +67,7 @@ class Database():
         if user:
             updated_user = await self.user_collection.update_one(
                 {"username": username}, {"$push": { "messages": {
+                    "_id": ObjectId(),
                     "text": message.text,
                     "checked": message.checked,
                     "emotional": message.emotional,

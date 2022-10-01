@@ -1,8 +1,10 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 from typing import List,Optional
+from bson.objectid import ObjectId
 
 
 class MessageSchema(BaseModel):
+    _id: ObjectId
     text: str = Field(...)
     checked: bool = False
     emotional: Optional[str]
@@ -21,19 +23,17 @@ class MessageSchema(BaseModel):
 
 class UserSchema(BaseModel):
     username: str = Field(...)
-    email: EmailStr = Field(...)
     messages: Optional[List[MessageSchema]]
 
     class Config:
         schema_extra = {
             "example": {
-                "username": "Vlad Zuev",
-                "email": "zuevvlad55@gmail.com",
-                "messages": [{"text": "message",
-                              "checked": False,
-                              "emotional": "happiness",
-                              "sender": "Vlad"
-                              }],
+                "username": "Vlad Zuev"
+                # "messages": [{"text": "message",
+                #               "checked": False,
+                #               "emotional": "happiness",
+                #               "sender": "Vlad"
+                #               }],
             }
         }
 
