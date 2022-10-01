@@ -55,10 +55,10 @@ async def websocket_endpoint(websocket:WebSocket,username:str):
     try:
         while True:
             message = await websocket.receive_text()
-            model_message = Message(
+            model_message = MessageSchema(
                 text = message,
                 checked = False,
-                emotional = "vhuuh",
+                emotional = "vhuuh", # Нужно исправиц!
                 sender = username
 
             )
@@ -79,16 +79,16 @@ async def add_user_data(user:UserSchema = Body(...),Data =Depends(Database)):
 
 
 
-@router.get("/", response_description="Users retrieved")
-async def get_students(Data =Depends(Database)):
-    users = await Data.retrieve_users()
-    if users:
-        return ResponseModel(users,'Users data retrieved successfully')
-    return ResponseModel(users,'Empty list returned')
+# @router.get("/", response_description="Users retrieved")
+# async def get_students(Data =Depends(Database)):
+#     users = await Data.retrieve_users()
+#     if users:
+#         return ResponseModel(users,'Users data retrieved successfully')
+#     return ResponseModel(users,'Empty list returned')
 
 
-@router.get("/{username}", response_description="Student data retrieved")
-async def get_student_data(username:str, Data =Depends(Database)):
+@router.get("/{username}", response_description="User data retrieved")
+async def get_user_data(username:str, Data =Depends(Database)):
     user = await Data.retrieve_user(username)
     if user:
         return ResponseModel(user, 'User data retrieved successfully')
@@ -110,7 +110,7 @@ async def delete_user_data(id:str, Data =Depends(Database)):
 
 
 @router.get("/messages/{username}", response_description="Messages username")
-async def get_student_data(username:str, Data =Depends(Database)):
+async def send_message(username:str, Data =Depends(Database)):
     user = await Data.get_messages(username)
     if user:
         return ResponseModel(user, 'Messages data retrieved successfully')

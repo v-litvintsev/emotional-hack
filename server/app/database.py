@@ -1,6 +1,6 @@
 from motor import motor_asyncio
 from bson.objectid import ObjectId
-from .models  import Message
+from .models  import MessageSchema
 
 
 
@@ -59,7 +59,7 @@ class Database():
         if user:
             return self.message_helper(user)
 
-    async def add_message(self,username:str,message:Message):
+    async def add_message(self,username:str,message:MessageSchema):
         user = await self.user_collection.find_one({"username": username})
         if user:
             updated_user = await self.user_collection.update_one(

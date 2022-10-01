@@ -2,17 +2,27 @@ from pydantic import BaseModel, EmailStr, Field
 from typing import List,Optional
 
 
-class Message(BaseModel):
+class MessageSchema(BaseModel):
     text: str = Field(...)
     checked: bool = False
     emotional: Optional[str]
     sender: str
 
+    class Config:
+        schema_extra = {
+            "example": {
+                "text": "hello",
+                "checked": False,
+                "emotional": "hapiness",
+                "sender": "vladek"
+            }
+        }
+
 
 class UserSchema(BaseModel):
     username: str = Field(...)
     email: EmailStr = Field(...)
-    messages: Optional[List[Message]]
+    messages: Optional[List[MessageSchema]]
 
     class Config:
         schema_extra = {
