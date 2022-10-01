@@ -4,7 +4,6 @@ from bson.objectid import ObjectId
 
 
 class MessageSchema(BaseModel):
-    id: str
     text: str = Field(...)
     checked: bool = False
     emotion: Optional[str]
@@ -15,7 +14,7 @@ class MessageSchema(BaseModel):
             "example": {
                 "text": "hello",
                 "checked": False,
-                "emotional": "hapiness",
+                "emotion": "hapiness",
                 "sender": "vladek"
             }
         }

@@ -35,7 +35,7 @@ html = """
             };
             function sendMessage(event) {
                 var input = document.getElementById("messageText")
-                ws.send(JSON.stringify({type:'message', text: input.value, sender: username,emotion: 'none'}))
+                ws.send(JSON.stringify({checked: false, type:'message', text: input.value, sender: username,emotion: 'none'}))
                 input.value = ''
                 event.preventDefault()
             }
@@ -59,16 +59,15 @@ async def websocket_endpoint(websocket:WebSocket):
             message = await websocket.receive_text()
             parsed_message = json.loads(message)
             if parsed_message['type'] == 'message':
-                id = str(datetime.now())
 
-                model_message = MessageSchema(
-                    id = id,
-                    text = parsed_message['text'],
-                    emotion = parsed_message['emotion'],
-                    sender = parsed_message['sender']
-                )
+                # model_message = MessageSchema(
+                #     text = parsed_message['text'],
+                #     checked = False,
+                #     emotion = parsed_message['emotion'],
+                #     sender = parsed_message['sender']
+                # )
 
-                user = await Data.add_message(model_message.sender, model_message)
+                msg = await Data.add_message(parsed_message)
 
             await manager.broadcast(json.dumps(message))
 
@@ -76,47 +75,20 @@ async def websocket_endpoint(websocket:WebSocket):
         manager.disconnect(websocket)
 
 
-@router.post('/', response_description='User data added into the database')
-async def add_user_data(user:UserSchema = Body(...),Data =Depends(Database)):
-    user = jsonable_encoder(user)
-    new_user = await Data.add_user(user)
-    return ResponseModel(new_user,'User added successfully.')
 
 
 
-@router.get("/", response_description="Users retrieved")
-async def get_students(Data =Depends(Database)):
-    users = await Data.retrieve_users()
-    if users:
-        return ResponseModel(users,'Users data retrieved successfully')
-    return ResponseModel(users,'Empty list returned')
 
-
-@router.get("/{username}", response_description="User data retrieved")
-async def get_user_data(username:str, Data =Depends(Database)):
-    user = await Data.retrieve_user(username)
-    if user:
-        return ResponseModel(user, 'User data retrieved successfully')
-    return ErrorResponseModel("An error occurred.", 404, "Student doesn't exist.")
-
-
-
-@router.delete('/{username}', response_description="User data deleted from the database")
-async def delete_user_data(id:str, Data =Depends(Database)):
-    deleted_user = await Data.delete_user(id)
-    if deleted_user:
-        return ResponseModel(
-            "User with ID: {} removed".format(id), "User deleted successfully"
-        )
-    return ResponseModel(
-        "An error occurred", 404, "User with id {0} doesn't exist".format(id)
-    )
-
-
-
-@router.get("/messages/{username}", response_description="Messages username")
-async def send_message(username:str, Data =Depends(Database)):
-    user = await Data.get_messages(username)
-    if user:
-        return ResponseModel(user, 'Messages data retrieved successfully')
+@router.post("/messages", response_description="Upload message")
+async def add_message(message: MessageSchema = Body(...), Data =Depends(Database)):
+    message = jsonable_encoder(message)
+    message = await Data.add_message(message)
+    if message:
+        return ResponseModel(message, 'Messages data retrieved successfully')
     return ErrorResponseModel("An error occurred.", 404, "Messages don't exist.")
+
+@router.get("/messages", response_description= "Get message" )
+async def get_message(Data = Depends(Database)):
+    messages =  await Data.get_all_message()
+
+    return ResponseModel(messages,"Messages data retrieved successfully")
