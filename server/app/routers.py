@@ -5,7 +5,25 @@ from .database import *
 from .models import *
 from fastapi.encoders import jsonable_encoder
 import json
-from datetime import datetime
+from dostoevsky.tokenization import RegexTokenizer
+from dostoevsky.models import FastTextSocialNetworkModel
+# from statistics import Emotion
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 html = """
 <!DOCTYPE html>
@@ -44,6 +62,19 @@ html = """
 </html>
 """
 
+
+class Emotion():
+
+    def emotion_message(message: str):
+        FastTextSocialNetworkModel.MODEL_PATH = 'app/models/fasttext-social-network-model.bin'
+        tokenizer = RegexTokenizer()
+        model = FastTextSocialNetworkModel(tokenizer=tokenizer)
+
+        msg = [message]
+        results = model.predict(msg, k=2)
+        res = results[0]
+        for key, value in res.items():
+            return key
 manager = ConnectionManager()
 router = APIRouter()
 Data = Database()
@@ -51,8 +82,11 @@ Data = Database()
 async def get():
     return HTMLResponse(html)
 
-@router.websocket('/ws')
+@router.websocket('/ws',)
 async def websocket_endpoint(websocket:WebSocket):
+
+
+
     await manager.connect(websocket)
     try:
         while True:
@@ -65,10 +99,10 @@ async def websocket_endpoint(websocket:WebSocket):
                 #     emotion = parsed_message['emotion'],
                 #     sender = parsed_message['sender']
                 # )
-
+                parsed_message['emotion'] = Emotion.emotion_message(parsed_message['text'])
                 msg = await Data.add_message(parsed_message)
 
-            await manager.broadcast(json.dumps(message))
+            await manager.broadcast(str(parsed_message))
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
@@ -91,3 +125,4 @@ async def get_message(Data = Depends(Database)):
     messages =  await Data.get_all_message()
 
     return ResponseModel(messages,"Messages data retrieved successfully")
+
