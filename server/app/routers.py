@@ -21,9 +21,9 @@ html = """
         <ul id='messages'>
         </ul>
         <script>
-            var username = "Vlad Zuev"
+            var username = "biggvladik"
             document.querySelector("#ws-id").textContent = username;
-            var ws = new WebSocket(`ws://localhost:8000/ws/${username}`);
+            var ws = new WebSocket(`ws://localhost:80/ws/${username}`);
             ws.onmessage = function(event) {
                 var messages = document.getElementById('messages')
                 var message = document.createElement('li')
@@ -69,7 +69,10 @@ async def websocket_endpoint(websocket:WebSocket,username:str):
         manager.disconnect(websocket)
         await manager.broadcast(f"Client #{username} left the chat")
 
+    @router.get("/")
+    async def index():
 
+        return 'H'
 
 @router.post('/', response_description='User data added into the database')
 async def add_user_data(user:UserSchema = Body(...),Data =Depends(Database)):
@@ -79,12 +82,12 @@ async def add_user_data(user:UserSchema = Body(...),Data =Depends(Database)):
 
 
 
-# @router.get("/", response_description="Users retrieved")
-# async def get_students(Data =Depends(Database)):
-#     users = await Data.retrieve_users()
-#     if users:
-#         return ResponseModel(users,'Users data retrieved successfully')
-#     return ResponseModel(users,'Empty list returned')
+@router.get("/", response_description="Users retrieved")
+async def get_students(Data =Depends(Database)):
+    users = await Data.retrieve_users()
+    if users:
+        return ResponseModel(users,'Users data retrieved successfully')
+    return ResponseModel(users,'Empty list returned')
 
 
 @router.get("/{username}", response_description="User data retrieved")
