@@ -35,7 +35,7 @@ html = """
             };
             function sendMessage(event) {
                 var input = document.getElementById("messageText")
-                ws.send(JSON.stringify({checked: false, type:'message', text: input.value, sender: username,emotion: 'none'}))
+                ws.send(JSON.stringify({ type:'message', text: input.value, sender: username,emotion: 'none'}))
                 input.value = ''
                 event.preventDefault()
             }
@@ -62,7 +62,6 @@ async def websocket_endpoint(websocket:WebSocket):
 
                 # model_message = MessageSchema(
                 #     text = parsed_message['text'],
-                #     checked = False,
                 #     emotion = parsed_message['emotion'],
                 #     sender = parsed_message['sender']
                 # )

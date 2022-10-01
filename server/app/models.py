@@ -1,11 +1,10 @@
 from pydantic import BaseModel, Field
-from typing import List,Optional
+from typing import List, Optional
 from bson.objectid import ObjectId
 
 
 class MessageSchema(BaseModel):
     text: str = Field(...)
-    checked: bool = False
     emotion: Optional[str]
     sender: str
 
@@ -13,7 +12,6 @@ class MessageSchema(BaseModel):
         schema_extra = {
             "example": {
                 "text": "hello",
-                "checked": False,
                 "emotion": "hapiness",
                 "sender": "vladek"
             }
@@ -29,7 +27,6 @@ class UserSchema(BaseModel):
             "example": {
                 "username": "Vlad Zuev"
                 # "messages": [{"text": "message",
-                #               "checked": False,
                 #               "emotional": "happiness",
                 #               "sender": "Vlad"
                 #               }],
@@ -37,13 +34,13 @@ class UserSchema(BaseModel):
         }
 
 
-def ResponseModel(data,message):
+def ResponseModel(data, message):
     return {
-        'data':[data],
-        'code':200,
-        'message':message
+        'data': [data],
+        'code': 200,
+        'message': message
     }
 
 
-def ErrorResponseModel(error,code,message):
-    return {'error':error,'code':code,'message':message}
+def ErrorResponseModel(error, code, message):
+    return {'error': error, 'code': code, 'message': message}

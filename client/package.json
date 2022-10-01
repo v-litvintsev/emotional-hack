@@ -13,6 +13,7 @@
     "@types/react-dom": "^18.0.0",
     "@types/react-router-dom": "^5.3.3",
     "antd": "^4.23.2",
+    "axios": "^0.27.2",
     "gsap": "^3.11.2",
     "mobx": "^6.6.2",
     "mobx-react-lite": "^3.4.0",

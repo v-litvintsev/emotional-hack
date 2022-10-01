@@ -18,7 +18,6 @@ class Database():
         return {
             'id': str(message['_id']),
             'text':  message['text'],
-            'checked': message['checked'],
             'emotion': message['emotion'],
             'sender': message['sender'],
 
@@ -65,7 +64,6 @@ class Database():
             #     {"username": username}, {"$push": { "messages": {
             #         "_id": str(ObjectId()),
             #         "text": message.text,
-            #         "checked": message.checked,
             #         "emotion": message.emotion,
             #         "sender": message.sender,
             #

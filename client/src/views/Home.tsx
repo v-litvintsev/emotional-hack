@@ -1,15 +1,23 @@
-import { FC, useEffect, useState, useRef, ChangeEventHandler } from "react";
-import { PageHeader, Comment, Input, Button, Form } from "antd";
+import {
+  FC,
+  useEffect,
+  useState,
+  useRef,
+  ChangeEventHandler,
+  Ref,
+} from "react";
+import { PageHeader, Comment, Input, Button, Form, InputRef } from "antd";
 import { SendOutlined } from "@ant-design/icons";
-import { io } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export const Home: FC = () => {
-  const [socket, setSocket] = useState<any>(null);
+  const [socket, setSocket] = useState<null | WebSocket>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [messageText, setMessageText] = useState("");
-  const textRef = useRef<any>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [form] = Form.useForm();
+  const textInputRef = useRef<HTMLInputElement | null>(null);
 
   const navigate = useNavigate();
 
@@ -20,34 +28,58 @@ export const Home: FC = () => {
   };
 
   const handleMessageSending = () => {
+    socket?.send(
+      JSON.stringify({
+        type: "message",
+        text: messageText,
+        sender: localStorage.getItem("username"),
+        emotion: "none",
+      })
+    );
     setMessageText("");
     form.resetFields();
   };
+
+  useEffect(() => {
+    if (socket) {
+      socket.onmessage = (event) => {
+        const message = JSON.parse(JSON.parse(event.data));
+
+        if (message.type === "message") {
+          setMessages((messages) => [...messages, message]);
+
+          if (messagesEndRef) {
+            setTimeout(() => {
+              messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            }, 100);
+          }
+
+          textInputRef.current?.focus();
+        }
+      };
+    }
+  }, [socket]);
 
   useEffect(() => {
     if (!localStorage.getItem("username")) {
       navigate("/auth");
     }
 
-    setSocket(
-      io(`ws://localhost:8000/ws/${localStorage.getItem("username") ?? ""}`)
-    );
+    if (!socket) {
+      setSocket(new WebSocket(`ws://localhost:80/ws`));
+    }
 
-    setMessages([
-      { id: "0", text: "falsdfkjasldkfjasf", sender: "qweruadflzvx" },
-      { id: "1", text: "falsdfkjasldkfjasf", sender: "qweruadflzvx" },
-      { id: "2", text: "falsdfkjasldkfjasf", sender: "qweruadflzvx" },
-      { id: "3", text: "falsdfkjasldkfjasf", sender: "lkjlkj" },
-      { id: "4", text: "falsdfkjasldkfjasf", sender: "qweruadflzvx" },
-      { id: "5", text: "falsdfkjasldkfjasf", sender: "qweruadflzvx" },
-      { id: "6", text: "falsdfkjasldkfjasf", sender: "qweruadflzvx" },
-      {
-        id: "7",
-        text: "falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf falsdfkjasldkfjasf",
-        sender: "qweruadflzvx",
-      },
-      { id: "8", text: "falsdfkjasldkfjasf", sender: "qweruadflzvx" },
-    ]);
+    textInputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const response = await axios.get("http://localhost:80/messages");
+      setMessages(response.data.data[0]);
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    })();
   }, []);
 
   return (
@@ -83,9 +115,9 @@ export const Home: FC = () => {
           overflow: "auto",
         }}
       >
-        {messages.map(({ sender, text, id }) => (
+        {messages.map(({ sender, text }, index) => (
           <Comment
-            key={id}
+            key={index}
             style={{
               background:
                 sender === localStorage.getItem("username")
@@ -105,6 +137,7 @@ export const Home: FC = () => {
             author={sender}
           />
         ))}
+        <div ref={messagesEndRef}></div>
       </div>
       <div
         style={{
@@ -124,11 +157,11 @@ export const Home: FC = () => {
         >
           <Form.Item name="text" style={{ marginBottom: "0" }}>
             <Input
+              ref={textInputRef as Ref<InputRef>}
               placeholder="Введите сообщение"
               onChange={handleTextInputChange}
               size="large"
               style={{ width: "calc(100vw - 48px - 80px)" }}
-              ref={textRef}
             />
           </Form.Item>
           <Button type="primary" size="large" htmlType="submit">
