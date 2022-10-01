@@ -4,10 +4,10 @@ from bson.objectid import ObjectId
 
 
 class MessageSchema(BaseModel):
-    _id: ObjectId
+    id: str
     text: str = Field(...)
     checked: bool = False
-    emotional: Optional[str]
+    emotion: Optional[str]
     sender: str
 
     class Config:

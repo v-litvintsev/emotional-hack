@@ -70,7 +70,7 @@ class Database():
                     "_id": ObjectId(),
                     "text": message.text,
                     "checked": message.checked,
-                    "emotional": message.emotional,
+                    "emotional": message.emotion,
                     "sender": message.sender,
 
                 }
