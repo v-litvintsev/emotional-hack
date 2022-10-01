@@ -1,6 +1,6 @@
 from motor import motor_asyncio
 from bson.objectid import ObjectId
-
+from .models  import Message
 
 
 
@@ -8,7 +8,7 @@ from bson.objectid import ObjectId
 # MONGO_DETAILS = 'mongodb://localhost:27017'
 class Database():
     def __init__(self):
-        self.client = motor_asyncio.AsyncIOMotorClient("mongodb://localhost:27017")
+        self.client = motor_asyncio.AsyncIOMotorClient("mongodb://mongodb:27017/")
         self.database = self.client.users
         self.user_collection = self.database.get_collection('users_collection')
     @staticmethod
@@ -58,6 +58,26 @@ class Database():
         user = await self.user_collection.find_one({'username':username})
         if user:
             return self.message_helper(user)
+
+    async def add_message(self,username:str,message:Message):
+        user = await self.user_collection.find_one({"username": username})
+        if user:
+            updated_user = await self.user_collection.update_one(
+                {"username": username}, {"$push": { "messages": {
+                    "text": message.text,
+                    "checked": message.checked,
+                    "emotional": message.emotional,
+                    "sender": message.sender,
+
+                }
+
+                }}
+            )
+            if updated_user:
+                return True
+            return False
+
+
 
 
 

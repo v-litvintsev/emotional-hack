@@ -21,9 +21,9 @@ html = """
         <ul id='messages'>
         </ul>
         <script>
-            var client_id = Date.now()
-            document.querySelector("#ws-id").textContent = client_id;
-            var ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
+            var username = "biggvladik"
+            document.querySelector("#ws-id").textContent = username;
+            var ws = new WebSocket(`ws://localhost:8000/ws/${username}`);
             ws.onmessage = function(event) {
                 var messages = document.getElementById('messages')
                 var message = document.createElement('li')
@@ -44,22 +44,30 @@ html = """
 
 manager = ConnectionManager()
 router = APIRouter()
-
+Data = Database()
 @router.get('/chat')
 async def get():
     return HTMLResponse(html)
 
-@router.websocket('/ws/{client_id}')
-async def websocket_endpoint(websocket:WebSocket,client_id:int):
+@router.websocket('/ws/{username}')
+async def websocket_endpoint(websocket:WebSocket,username:str):
     await manager.connect(websocket)
     try:
         while True:
             message = await websocket.receive_text()
-            await manager.broadcast(f"Client #{client_id} says: {message}")
+            model_message = Message(
+                text = message,
+                checked = False,
+                emotional = "vhuuh",
+                sender = username
+
+            )
+            user = await Data.add_message(username,model_message)
+            await manager.broadcast(f"Client #{username} says: {message}")
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
-        await manager.broadcast(f"Client #{client_id} left the chat")
+        await manager.broadcast(f"Client #{username} left the chat")
 
 
 
