@@ -18,6 +18,9 @@ export const Home: FC = () => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [form] = Form.useForm();
   const textInputRef = useRef<HTMLInputElement | null>(null);
+  const [statistics, setStatistics] = useState<string[]>([]);
+  const [bgColor, setBgColor] = useState("#202e3e");
+  const [isBgModeActive, setIsBgModeActive] = useState(false);
 
   const navigate = useNavigate();
 
@@ -28,22 +31,60 @@ export const Home: FC = () => {
   };
 
   const handleMessageSending = () => {
-    socket?.send(
-      JSON.stringify({
-        type: "message",
-        text: messageText,
-        sender: localStorage.getItem("username"),
-        emotion: "none",
-      })
-    );
+    messageText &&
+      socket?.send(
+        JSON.stringify({
+          type: "message",
+          text: messageText,
+          sender: localStorage.getItem("username"),
+          emotion: "none",
+        })
+      );
     setMessageText("");
     form.resetFields();
   };
 
   useEffect(() => {
+    const emotions = messages
+      .map((message) => message.emotion)
+      .filter(
+        (emotion) =>
+          emotion === "neutral" ||
+          emotion === "positive" ||
+          emotion === "negative"
+      );
+
+    setStatistics(emotions);
+
+    if (isBgModeActive) {
+      // 16, 133, 47 positive
+      // 145, 35, 16 negative
+      // 32, 46, 62 neutral
+
+      const positive =
+        emotions.filter((emotion) => emotion === "positive").length /
+        emotions.length;
+      const negative =
+        emotions.filter((emotion) => emotion === "negative").length /
+        emotions.length;
+      const neutral =
+        emotions.filter((emotion) => emotion === "neutral").length /
+        emotions.length;
+
+      const resultColor = `rgb(${
+        16 * positive + 145 * negative + 32 * neutral
+      }, ${133 * positive + 35 * negative + 46 * neutral}, ${
+        47 * positive + 16 * negative + 62 * neutral
+      })`;
+
+      setBgColor(resultColor);
+    }
+  }, [messages, isBgModeActive]);
+
+  useEffect(() => {
     if (socket) {
       socket.onmessage = (event) => {
-        const message = JSON.parse(JSON.parse(event.data));
+        const message = JSON.parse((event.data as string).replaceAll("'", '"'));
 
         if (message.type === "message") {
           setMessages((messages) => [...messages, message]);
@@ -82,28 +123,69 @@ export const Home: FC = () => {
     })();
   }, []);
 
+  const handleModeChange = () => {
+    setIsBgModeActive(!isBgModeActive);
+
+    if (isBgModeActive) {
+      const emotions = messages
+        .map((message) => message.emotion)
+        .filter(
+          (emotion) =>
+            emotion === "neutral" ||
+            emotion === "positive" ||
+            emotion === "negative"
+        );
+
+      const positive =
+        emotions.filter((emotion) => emotion === "positive").length /
+        emotions.length;
+      const negative =
+        emotions.filter((emotion) => emotion === "negative").length /
+        emotions.length;
+      const neutral =
+        emotions.filter((emotion) => emotion === "neutral").length /
+        emotions.length;
+
+      const resultColor = `rgb(${
+        16 * positive + 145 * negative + 32 * neutral
+      }, ${133 * positive + 35 * negative + 46 * neutral}, ${
+        47 * positive + 16 * negative + 62 * neutral
+      })`;
+
+      setBgColor(resultColor);
+    } else {
+      setBgColor("#202e3e");
+    }
+  };
+
   return (
     <div
       style={{
         padding: "20px 40px",
         color: "#fff",
-        background: "#202e3e",
+        background: isBgModeActive ? `${bgColor}` : "#202e3e",
+        transition: "0.5s",
         height: "100vh",
       }}
     >
       <PageHeader
         title={localStorage.getItem("username") ?? ""}
-        style={{ color: "#fff !important" }}
         extra={[
-          <Button
-            onClick={() => {
-              localStorage.removeItem("username");
-              navigate("/auth");
-            }}
-            type="primary"
-          >
-            Выйти
-          </Button>,
+          <>
+            <Button onClick={handleModeChange}>
+              Вкл/выкл Эмоциональный режим
+            </Button>
+            <Button
+              onClick={() => {
+                localStorage.removeItem("username");
+                navigate("/auth");
+              }}
+              type="primary"
+            >
+              Выйти
+            </Button>
+            ,
+          </>,
         ]}
       />
       <div
@@ -115,29 +197,71 @@ export const Home: FC = () => {
           overflow: "auto",
         }}
       >
-        {messages.map(({ sender, text }, index) => (
-          <Comment
-            key={index}
-            style={{
-              background:
+        {messages.map(({ sender, text, emotion }, index) => {
+          const background: string =
+            sender === localStorage.getItem("username") ? "#1e4f84" : "#394d63";
+
+          const className =
+            emotion === "positive"
+              ? "positive-message"
+              : emotion === "negative"
+              ? "negative-message"
+              : "";
+
+          return (
+            <Comment
+              key={index}
+              className={
                 sender === localStorage.getItem("username")
-                  ? "#1e4f84"
-                  : "#394d63",
-              borderRadius: "10px",
-              padding: "0 30px",
-              color: "#fff",
-              marginTop: 30,
-              maxWidth: "80%",
-              alignSelf:
-                sender === localStorage.getItem("username")
-                  ? "flex-end"
-                  : "flex-start",
-            }}
-            content={<p>{text}</p>}
-            author={sender}
-          />
-        ))}
+                  ? `${className} own`
+                  : className
+              }
+              style={{
+                background,
+                borderRadius: "10px",
+                padding: "0 30px",
+                color: "#fff",
+                marginTop: 30,
+                maxWidth: "80%",
+                alignSelf:
+                  sender === localStorage.getItem("username")
+                    ? "flex-end"
+                    : "flex-start",
+              }}
+              content={<p>{text}</p>}
+              author={sender}
+            />
+          );
+        })}
         <div ref={messagesEndRef}></div>
+      </div>
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: 12,
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {statistics.map((emotion) => (
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              background:
+                emotion === "neutral"
+                  ? "#2c537d"
+                  : emotion === "positive"
+                  ? "#25d746"
+                  : emotion === "negative"
+                  ? "#e23724"
+                  : "none",
+            }}
+          ></div>
+        ))}
       </div>
       <div
         style={{

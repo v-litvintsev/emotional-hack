@@ -101,8 +101,9 @@ async def websocket_endpoint(websocket:WebSocket):
                 # )
                 parsed_message['emotion'] = Emotion.emotion_message(parsed_message['text'])
                 msg = await Data.add_message(parsed_message)
+                parsed_message['_id'] = str(parsed_message['_id'])
 
-            await manager.broadcast(str(parsed_message))
+            await manager.broadcast(json.dumps(parsed_message))
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)

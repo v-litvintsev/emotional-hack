@@ -13,3 +13,89 @@
 ::-webkit-scrollbar {
   width: 0;
 }
+
+.positive-message {
+  position: relative;
+  animation: positive-animation 1s 0.5s ease-out forwards;
+
+  &::before {
+    opacity: 0;
+    content: "🤩";
+    position: absolute;
+    font-size: 40px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: emoji-fade-out .7s 0.5s ease-out forwards;
+  }
+}
+
+.negative-message {
+  position: relative;
+  animation: negative-animation 1s 0.5s ease-out forwards;
+
+  &::before {
+    opacity: 0;
+    content: "😡";
+    position: absolute;
+    font-size: 40px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: emoji-fade-out .7s 0.5s ease-out forwards;
+  }
+}
+
+.positive-message.own {
+  animation: positive-animation-own 1s 0.5s ease-out forwards;
+}
+
+.negative-message.own {
+  animation: negative-animation-own 1s 0.5s ease-out forwards;
+}
+
+@keyframes emoji-fade-out {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(10px);
+  }
+  to {
+    opacity: 0.3;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes positive-animation {
+  from {
+    background: #394d63;
+  }
+  to {
+    background: #259339;
+  }
+}
+
+@keyframes negative-animation {
+  from {
+    background: #394d63;
+  }
+  to {
+    background: #a15137;
+  }
+}
+@keyframes positive-animation-own {
+  from {
+    background: #1e4f84;
+  }
+  to {
+    background: #259339;
+  }
+}
+
+@keyframes negative-animation-own {
+  from {
+    background: #1e4f84;
+  }
+  to {
+    background: #a15137;
+  }
+}
