@@ -5,14 +5,49 @@ from .database import *
 from .models import *
 from fastapi.encoders import jsonable_encoder
 
-
+html = """
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chat</title>
+    </head>
+    <body>
+        <h1>WebSocket Chat</h1>
+        <h2>Your ID: <span id="ws-id"></span></h2>
+        <form action="" onsubmit="sendMessage(event)">
+            <input type="text" id="messageText" autocomplete="off"/>
+            <button>Send</button>
+        </form>
+        <ul id='messages'>
+        </ul>
+        <script>
+            var client_id = Date.now()
+            document.querySelector("#ws-id").textContent = client_id;
+            var ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
+            ws.onmessage = function(event) {
+                var messages = document.getElementById('messages')
+                var message = document.createElement('li')
+                var content = document.createTextNode(event.data)
+                message.appendChild(content)
+                messages.appendChild(message)
+            };
+            function sendMessage(event) {
+                var input = document.getElementById("messageText")
+                ws.send(input.value)
+                input.value = ''
+                event.preventDefault()
+            }
+        </script>
+    </body>
+</html>
+"""
 
 manager = ConnectionManager()
 router = APIRouter()
 
-# @router.get('/chat')
-# async def get():
-#     return HTMLResponse(html)
+@router.get('/chat')
+async def get():
+    return HTMLResponse(html)
 
 @router.websocket('/ws/{client_id}')
 async def websocket_endpoint(websocket:WebSocket,client_id:int):
@@ -36,7 +71,7 @@ async def add_user_data(user:UserSchema = Body(...),Data =Depends(Database)):
 
 
 
-@router.get("/", response_description="Students retrieved")
+@router.get("/", response_description="Users retrieved")
 async def get_students(Data =Depends(Database)):
     users = await Data.retrieve_users()
     if users:
@@ -44,17 +79,17 @@ async def get_students(Data =Depends(Database)):
     return ResponseModel(users,'Empty list returned')
 
 
-@router.get("/{id}", response_description="Student data retrieved")
-async def get_student_data(id:str,Data =Depends(Database)):
-    user = await Data.retrieve_user(id)
+@router.get("/{username}", response_description="Student data retrieved")
+async def get_student_data(username:str, Data =Depends(Database)):
+    user = await Data.retrieve_user(username)
     if user:
         return ResponseModel(user, 'User data retrieved successfully')
     return ErrorResponseModel("An error occurred.", 404, "Student doesn't exist.")
 
 
 
-@router.delete('/{id}', response_description="User data deleted from the database")
-async def delete_user_data(id:str,Data =Depends(Database)):
+@router.delete('/{username}', response_description="User data deleted from the database")
+async def delete_user_data(id:str, Data =Depends(Database)):
     deleted_user = await Data.delete_user(id)
     if deleted_user:
         return ResponseModel(
@@ -63,3 +98,12 @@ async def delete_user_data(id:str,Data =Depends(Database)):
     return ResponseModel(
         "An error occurred", 404, "User with id {0} doesn't exist".format(id)
     )
+
+
+
+@router.get("/messages/{username}", response_description="Messages username")
+async def get_student_data(username:str, Data =Depends(Database)):
+    user = await Data.get_messages(username)
+    if user:
+        return ResponseModel(user, 'Messages data retrieved successfully')
+    return ErrorResponseModel("An error occurred.", 404, "Messages don't exist.")

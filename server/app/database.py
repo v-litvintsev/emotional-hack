@@ -8,7 +8,7 @@ from bson.objectid import ObjectId
 # MONGO_DETAILS = 'mongodb://localhost:27017'
 class Database():
     def __init__(self):
-        self.client = motor_asyncio.AsyncIOMotorClient("mongodb://mongodb:27017/")
+        self.client = motor_asyncio.AsyncIOMotorClient("mongodb://localhost:27017")
         self.database = self.client.users
         self.user_collection = self.database.get_collection('users_collection')
     @staticmethod
@@ -17,6 +17,13 @@ class Database():
             'id': str(user['_id']),
             'username': user['username'],
             "email": user["email"],
+            'messages': user['messages'],
+        }
+
+
+    @staticmethod
+    def message_helper(user) -> dict:
+        return {
             'messages': user['messages'],
         }
 
@@ -34,8 +41,8 @@ class Database():
 
         return users
 
-    async def retrieve_user(self,id: str) -> dict:
-        user = await self.user_collection.find_one({'_id': ObjectId(id)})
+    async def retrieve_user(self,username: str) -> dict:
+        user = await self.user_collection.find_one({'username': username})
         if user:
             return self.user_helper(user)
 
@@ -44,5 +51,14 @@ class Database():
         if user:
             await self.user_collection.delete_one({'_id': ObjectId(id)})
             return True
+
+
+
+    async def get_messages(self,username:str):
+        user = await self.user_collection.find_one({'username':username})
+        if user:
+            return self.message_helper(user)
+
+
 
 
