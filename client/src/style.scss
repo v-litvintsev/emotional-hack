@@ -14,6 +14,10 @@
   width: 0;
 }
 
+.ant-checkbox-wrapper {
+  color: #fff;
+}
+
 .positive-message {
   position: relative;
   animation: positive-animation 1s 0.5s ease-out forwards;
@@ -26,7 +30,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    animation: emoji-fade-out .7s 0.5s ease-out forwards;
+    animation: emoji-fade-out 0.7s 0.5s ease-out forwards;
   }
 }
 
@@ -42,7 +46,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    animation: emoji-fade-out .7s 0.5s ease-out forwards;
+    animation: emoji-fade-out 0.7s 0.5s ease-out forwards;
   }
 }
 
@@ -97,5 +101,32 @@
   }
   to {
     background: #a15137;
+  }
+}
+
+.animating-emoji {
+  position: fixed;
+  top: 50vh;
+  left: 50vw;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  z-index: 1;
+  font-size: 100px;
+
+  animation: emoji-animation 2s ease-in-out forwards;
+}
+
+@keyframes emoji-animation {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
   }
 }

@@ -6,10 +6,20 @@ import {
   ChangeEventHandler,
   Ref,
 } from "react";
-import { PageHeader, Comment, Input, Button, Form, InputRef } from "antd";
+import {
+  PageHeader,
+  Comment,
+  Input,
+  Button,
+  Form,
+  InputRef,
+  Checkbox,
+} from "antd";
 import { SendOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+
+const EMOJI_REGEX = /\p{Emoji}/gu;
 
 export const Home: FC = () => {
   const [socket, setSocket] = useState<null | WebSocket>(null);
@@ -21,6 +31,8 @@ export const Home: FC = () => {
   const [statistics, setStatistics] = useState<string[]>([]);
   const [bgColor, setBgColor] = useState("#202e3e");
   const [isBgModeActive, setIsBgModeActive] = useState(false);
+  const [isEmojiRainModeActive, setIsEmojiRainModeActive] = useState(false);
+  const [isEmojiAnimationPlaying, setIsEmojiAnimationPlaying] = useState(false);
 
   const navigate = useNavigate();
 
@@ -79,7 +91,49 @@ export const Home: FC = () => {
 
       setBgColor(resultColor);
     }
-  }, [messages, isBgModeActive]);
+
+    if (isEmojiRainModeActive && !isEmojiAnimationPlaying && messages.length) {
+      (async () => {
+        // const translateResponse = await axios.post(
+        //   "https://translate.api.cloud.yandex.net/translate/v2/translate/",
+        //   {
+        //     // folderId: "b1gci6b0pctsrdqq06j0",
+        //     // targetLanguageCode: "emj",
+        //     // texts: ['Привет'] //messages[messages.length - 1].text.split(" "),
+        //   },
+        //   {
+        //     headers: {
+        //       Authorization:
+        //         "Bearer t1.9euelZrGzZeLm5jPlpickMeQmY-bk-3rnpWakomRk42cj5fPx5jHmZeQlcjl9PcKHhxm-e9PPAfC3fT3SkwZZvnvTzwHwg.GjLZyFlTlhS0LKoF_cTZx1ckts20SFI_GotIisQwpmRJ-ZrIjWcMyKi-epedsWN-KwslYx_0Ph2BLRngfT0aBw",
+        //         "Access-Control-Allow-Origin": "*"
+        //     },
+        //   }
+        // );
+
+        // console.log(translateResponse);
+
+        const matches = [
+          ...messages[messages.length - 1].text.matchAll(EMOJI_REGEX),
+        ];
+        matches.forEach((match, index) => {
+          const emoji: string = match[0];
+
+          const element = document.createElement("div");
+          element.classList.add("animating-emoji");
+          element.innerText = emoji;
+          element.style.animationDelay = `${index * 1.5}s`;
+          setIsEmojiAnimationPlaying(true);
+
+          document.body.appendChild(element);
+
+          setTimeout(() => {
+            element.remove();
+            setIsEmojiAnimationPlaying(false);
+          }, 1500 * (index + 1) + 500);
+        });
+      })();
+    }
+  }, [messages, isBgModeActive, isEmojiRainModeActive]);
 
   useEffect(() => {
     if (socket) {
@@ -158,6 +212,10 @@ export const Home: FC = () => {
     }
   };
 
+  const handleEmojiRainModeChange = () => {
+    setIsEmojiRainModeActive(!isEmojiRainModeActive);
+  };
+
   return (
     <div
       style={{
@@ -172,9 +230,10 @@ export const Home: FC = () => {
         title={localStorage.getItem("username") ?? ""}
         extra={[
           <>
-            <Button onClick={handleModeChange}>
-              Вкл/выкл Эмоциональный режим
-            </Button>
+            <Checkbox onClick={handleEmojiRainModeChange}>
+              Режим смайлов
+            </Checkbox>
+            <Checkbox onClick={handleModeChange}>Эмоциональный фон</Checkbox>
             <Button
               onClick={() => {
                 localStorage.removeItem("username");
@@ -184,7 +243,6 @@ export const Home: FC = () => {
             >
               Выйти
             </Button>
-            ,
           </>,
         ]}
       />
