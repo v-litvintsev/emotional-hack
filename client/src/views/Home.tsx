@@ -93,45 +93,25 @@ export const Home: FC = () => {
     }
 
     if (isEmojiRainModeActive && !isEmojiAnimationPlaying && messages.length) {
-      (async () => {
-        // const translateResponse = await axios.post(
-        //   "https://translate.api.cloud.yandex.net/translate/v2/translate/",
-        //   {
-        //     // folderId: "b1gci6b0pctsrdqq06j0",
-        //     // targetLanguageCode: "emj",
-        //     // texts: ['Привет'] //messages[messages.length - 1].text.split(" "),
-        //   },
-        //   {
-        //     headers: {
-        //       Authorization:
-        //         "Bearer t1.9euelZrGzZeLm5jPlpickMeQmY-bk-3rnpWakomRk42cj5fPx5jHmZeQlcjl9PcKHhxm-e9PPAfC3fT3SkwZZvnvTzwHwg.GjLZyFlTlhS0LKoF_cTZx1ckts20SFI_GotIisQwpmRJ-ZrIjWcMyKi-epedsWN-KwslYx_0Ph2BLRngfT0aBw",
-        //         "Access-Control-Allow-Origin": "*"
-        //     },
-        //   }
-        // );
+      const matches = [
+        ...messages[messages.length - 1].text.matchAll(EMOJI_REGEX),
+      ];
+      matches.forEach((match, index) => {
+        const emoji: string = match[0];
 
-        // console.log(translateResponse);
+        const element = document.createElement("div");
+        element.classList.add("animating-emoji");
+        element.innerText = emoji;
+        element.style.animationDelay = `${index * 1.5}s`;
+        setIsEmojiAnimationPlaying(true);
 
-        const matches = [
-          ...messages[messages.length - 1].text.matchAll(EMOJI_REGEX),
-        ];
-        matches.forEach((match, index) => {
-          const emoji: string = match[0];
+        document.body.appendChild(element);
 
-          const element = document.createElement("div");
-          element.classList.add("animating-emoji");
-          element.innerText = emoji;
-          element.style.animationDelay = `${index * 1.5}s`;
-          setIsEmojiAnimationPlaying(true);
-
-          document.body.appendChild(element);
-
-          setTimeout(() => {
-            element.remove();
-            setIsEmojiAnimationPlaying(false);
-          }, 1500 * (index + 1) + 500);
-        });
-      })();
+        setTimeout(() => {
+          element.remove();
+          setIsEmojiAnimationPlaying(false);
+        }, 1500 * (index + 1) + 500);
+      });
     }
   }, [messages, isBgModeActive, isEmojiRainModeActive]);
 
