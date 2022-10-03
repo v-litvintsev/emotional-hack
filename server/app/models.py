@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
-from bson.objectid import ObjectId
+from typing import  Optional
 
 
 class MessageSchema(BaseModel):
@@ -16,23 +15,6 @@ class MessageSchema(BaseModel):
                 "sender": "vladek"
             }
         }
-
-
-class UserSchema(BaseModel):
-    username: str = Field(...)
-    messages: Optional[List[MessageSchema]]
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "username": "Vlad Zuev"
-                # "messages": [{"text": "message",
-                #               "emotional": "happiness",
-                #               "sender": "Vlad"
-                #               }],
-            }
-        }
-
 
 def ResponseModel(data, message):
     return {
